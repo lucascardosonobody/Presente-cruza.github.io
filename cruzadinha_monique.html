@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palavras Cruzadas do Nosso Amor 💖</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #db2777;
+            --primary-light: #fbcfe8;
+            --primary-dark: #831843;
+            --secondary: #fda4af;
+            --bg-sweet: #fff5f7;
+            --text-main: #4c0519;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-sweet);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: var(--primary);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            font-size: 1.1rem;
+            color: #db2777;
+            font-weight: 600;
+        }
+
+        /* Progress Bar - Deixada invisível a pedido */
+        .progress-container {
+            display: none;
+        }
+
+        /* Main Game Wrapper */
+        .game-wrapper {
+            display: flex;
+            gap: 30px;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        .grid-column {
+            flex: 1.2;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .clues-column {
+            flex: 1;
+            min-width: 0;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 35px rgba(244, 63, 94, 0.08);
+            border: 1px solid #ffe4e6;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* The Grid */
+        #crossword-grid {
+            display: grid;
+            grid-template-columns: repeat(14, 1fr);
+            grid-template-rows: repeat(13, 1fr);
+            gap: 3px;
+            background-color: #fbcfe8;
+            border: 6px solid #fbcfe8;
+            border-radius: 16px;
+            padding: 10px;
+            max-width: 580px;
+            width: 100%;
+            aspect-ratio: 14/13;
+            box-shadow: 0 15px 35px rgba(244, 63, 94, 0.12);
+        }
+
+        .cell {
+            position: relative;
+            background-color: transparent;
+            aspect-ratio: 1/1;
+        }
+
+        .cell.empty {
+            background-color: #fff1f2;
+            border-radius: 6px;
+            opacity: 0.4;
+        }
+
+        .cell.active-letter {
+            background-color: #ffffff;
+            border: 2px solid #fbcfe8;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .cell.active-letter:hover {
+            border-color: #f472b6;
+        }
+
+        .cell-input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            text-align: center;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            text-transform: uppercase;
+            background: transparent;
+            padding: 0;
+            border-radius: 6px;
+        }
+
+        .cell .cell-number {
+            position: absolute;
+            top: 2px;
+            left: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--primary);
+            pointer-events: none;
+        }
+
+        /* Highlights */
+        .cell.highlight-word {
+            background-color: #fff1f2;
+            border-color: #fecdd3;
+        }
+
+        .cell.highlight-active-cell {
+            background-color: #ffe4e6;
+            border-color: #f43f5e;
+            box-shadow: 0 0 8px rgba(244, 63, 94, 0.3);
+        }
+
+        .cell-input.word-success {
+            background-color: #f0fdf4;
+            color: #166534;
+            animation: pulseSuccess 0.4s ease;
+        }
+
+        /* Clues styling */
+        .clues-section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 2px dashed #fecdd3;
+            padding-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clues-list {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .clue-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .clue-item:hover {
+            background-color: #fff5f7;
+            border-left-color: var(--secondary);
+        }
+
+        .clue-item.active-clue {
+            background-color: #ffe4e6;
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .clue-item.completed {
+            text-decoration: line-through;
+            color: #9ca3af;
+            background-color: #f3f4f6;
+            border-left-color: #cbd5e1;
+        }
+
+        .clue-item.completed::after {
+            content: "  ✓";
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        /* Bottom Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            width: 100%;
+            max-width: 580px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(219, 39, 119, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: var(--primary);
+            border: 2px solid var(--primary-light);
+        }
+
+        .btn-secondary:hover {
+            background-color: #fff1f2;
+            border-color: var(--primary);
+        }
+
+        /* Dynamic Explosion Elements - Deixado Lento (3.5s) */
+        .explosion-particle {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10005;
+            animation: burstOut 3.5s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+        }
+
+        .explosion-photo {
+            width: 110px;
+            height: 110px;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .explosion-heart {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        /* Balão da Palavra no Centro */
+        .center-word-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-size: 3.5rem;
+            color: white;
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            padding: 15px 40px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(219, 39, 119, 0.5);
+            z-index: 10010;
+            pointer-events: none;
+            opacity: 0;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            animation: popAndFade 3.5s ease-in-out forwards;
+        }
+
+        @keyframes popAndFade {
+            0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+            12% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            20% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        }
+
+        @keyframes burstOut {
+            0% {
+                transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+                opacity: 1;
+            }
+            75% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.1) rotate(var(--rot));
+                opacity: 0;
+            }
+        }
+
+        /* Floating Hearts Layer (Final Game Win) */
+        #hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .floating-heart {
+            position: absolute;
+            bottom: -50px;
+            animation: floatUp linear forwards;
+        }
+
+        /* Win Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(76, 5, 25, 0.4);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            transform: scale(0.85);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.8rem;
+            color: var(--primary);
+        }
+
+        .love-letter-scroll {
+            overflow-y: auto;
+            padding-right: 10px;
+            flex-grow: 1;
+            margin-bottom: 20px;
+            border: 2px dashed #fbcfe8;
+            border-radius: 16px;
+            background-color: #fffafb;
+            padding: 20px;
+        }
+
+        .love-letter-scroll p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            text-align: justify;
+        }
+
+        /* Video Container Design */
+        .video-box {
+            width: 100%;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(219, 39, 119, 0.2);
+            border: 4px solid var(--primary-light);
+            margin: 25px 0;
+        }
+
+        .video-box video {
+            width: 100%;
+            display: block;
+        }
+
+        /* Polaroid Effect */
+        .polaroid {
+            background: white;
+            padding: 12px 12px 25px 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            transform: rotate(-3deg);
+            max-width: 210px;
+            margin: 20px auto;
+            border: 1px solid #f3f4f6;
+            border-radius: 4px;
+        }
+
+        .polaroid img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+
+        .polaroid-caption {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.3rem;
+            color: var(--primary);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg) scale(0.5); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(-115vh) rotate(360deg) scale(1.2); opacity: 0; }
+        }
+
+        @keyframes pulseSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); background-color: #dcfce7; }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .game-wrapper { flex-direction: column; align-items: center; }
+            .grid-column, .clues-column { width: 100%; }
+            .clues-column { max-height: none; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2.2rem; }
+            .cell-input { font-size: 0.9rem; }
+            .explosion-photo { width: 80px; height: 80px; }
+            button { width: 100%; padding: 10px 15px; }
+            .controls { flex-direction: column; gap: 8px; }
+            .center-word-popup { font-size: 2rem; padding: 10px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>Cruzadinhas Cruzadas</h2>
+        <p class="subtitle">Será que você consegue cruzar todas as cruzadinhas cruzadas???</p>
+    </header>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-fill"></div>
+        <div class="progress-text" id="progress-text">0 de 10 palavras resolvidas (0%)</div>
+    </div>
+
+    <div class="game-wrapper">
+        <div class="grid-column">
+            <div id="crossword-grid"></div>
+        </div>
+
+        <div class="clues-column">
+            <div class="clues-section">
+                <h3 class="clues-section-title"> Horizontais</h3>
+                <ul class="clues-list" id="horizontals-list"></ul>
+            </div>
+            <div class="clues-section">
+                <h3 class="clues-section-title"> Verticais</h3>
+                <ul class="clues-list" id="verticals-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="hearts-container"></div>
+
+    <!-- Modal de Vitória -->
+    <div class="modal-overlay" id="win-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Você Conseguiu, meu Amor! </h2>
+            </div>
+            <div class="love-letter-scroll">
+                <p><strong>Minha Princesa Monique,</strong></p>
+                <p>Você resolveu cada um desses quadradinhos, provando mais uma vez o quão bem a gente se conhece e o quanto nossa história é repleta de detalhes únicos e especiais.</p>
+                
+                <div class="polaroid">
+                    <img src="foto3.jpeg" alt="Nosso Amor">
+                    <div class="polaroid-caption">Nós Dois Para Sempre </div>
+                </div>
+
+                <p>Cada palavra que você decifrou aqui representa um pedacinho de nós: dos nossos <strong>abraços</strong> apertados que são meu porto seguro, do nosso <strong>selinho</strong> infinito e aos <strong>biquinhos</strong> fofos que você sempre faz.</p>
+                <p>Das nossas aventuras pelos mundos quadrados do <strong>Minecraft</strong>, nosso amor imenso por nos mesmos e por <strong>comida</strong>, e aquela maravilhosa canção ou <strong>música</strong> de madrugada no meio-fio sob a dança do Sol e da Lua.</p>
+                <p>Tudo o que construímos se resume no sentimento mais forte que carrego comigo: o meu imenso <strong>amor</strong> por você, a cor <strong>azul</strong> que tanto amamos, e a realeza de ter você todos os dias como a minha única e eterna <strong>princesa</strong>.</p>
+                <p>Obrigado por mandar no meu coração e por fazer da minha vida a aventura mais linda de todas!</p>
+                
+                <!-- O VÍDEO ATUALIZADO NO FINAL DO TEXTO -->
+                <div class="video-box">
+                    <video controls poster="foto15.jpeg">
+                        <!-- PREENCHA AQUI: Troque 'seu-video.mp4' pelo nome do arquivo do seu vídeo real -->
+                        <source src="video-amor.mp4" type="video/mp4">
+                        Seu navegador não suporta a reprodução deste vídeo.
+                    </video>
+                </div>
+
+                <p style="text-align: right; font-family: 'Dancing Script', cursive; font-size: 1.8rem; color: var(--primary);">Com todo o meu amor, para sempre seu. ❤️</p>
+            </div>
+            <button class="btn-primary" onclick="closeModal()">Continuar Admirando</button>
+        </div>
+    </div>
+
+    <script>
+        // 🌟 BANCO DE 20 FOTOS ATUALIZADAS (.jpeg)
+        const photoPool = [
+            "foto1.jpeg", "foto2.jpeg", "foto3.jpeg", "foto4.jpeg", "foto5.jpeg",
+            "foto6.jpeg", "foto7.jpeg", "foto8.jpeg", "foto9.jpeg", "foto10.jpeg",
+            "foto11.jpeg", "foto12.jpeg", "foto13.jpeg", "foto14.jpeg", "foto15.jpeg",
+            "foto16.jpeg", "foto17.jpeg", "foto18.jpeg", "foto19.jpeg", "foto20.jpeg"
+        ];
+
+        const words = [
+          { id: 1, word: "BIQUINHO", row: 0, col: 2, dir: "V", num: 1, clue: "Expressão que você faz com os lábios toda vez que eu faço algo de errado." },
+          { id: 2, word: "SELINHO", row: 4, col: 6, dir: "V", num: 2, clue: "Sem dúvidas foi o seu mais longo." },
+          { id: 3, word: "MONIQUE", row: 5, col: 0, dir: "H", num: 3, clue: "A primeira letra está na Meiga flor. A segunda, no Ouro do seu olhar. A terceira é o Norte do meu caminho. A quarta é a inicial da Iluminação. As últimas três trazem o som do 'QUE' eu mais quero para sempre. Junte tudo e descubra quem manda no seu coração!" },
+          { id: 4, word: "AMOR", row: 5, col: 9, dir: "H", num: 4, clue: "Aquilo que não se explica, apenas se sente; o laço invisível que nos une desde o primeiro dia e a força que me faz querer ser uma pessoa melhor para você." },
+          { id: 5, word: "MUSICA", row: 5, col: 10, dir: "V", num: 5, clue: "Estamos sentados no meio-fio de madrugada esquecendo que o dia seguinte tem aula, vendo a chuva de sábado ir embora para as cores pincelarem o nosso lar, enquanto o Sol e a Lua dançam no céu. Tudo isso faz parte das nossas aventuras doidas, escritas no 'boca a boca' do nosso namoro. Eu sou a arte feita de ritmo e poesia que eterniza esse momento. Quem sou eu?" },
+          { id: 6, word: "PRINCESA", row: 7, col: 4, dir: "H", num: 6, clue: "Como eu te chamo todos os dias porque você é a realeza da minha vida." },
+          { id: 7, word: "COMIDA", row: 7, col: 8, dir: "V", num: 7, clue: "A melhor opção para qualquer ocasião." },
+          { id: 8, word: "ABRACO", row: 10, col: 1, dir: "H", num: 8, clue: "O lugar que eu me sinto mais seguro no mundo." },
+          { id: 9, word: "AZUL", row: 10, col: 10, dir: "H", num: 9, clue: "Se perguntarem qual é a cor mais bonita do mundo, nós dois daremos a mesma resposta. Tenho 4 letras, rimo com o Sul." },
+          { id: 10, word: "MINECRAFT", row: 12, col: 2, dir: "H", num: 10, clue: "Quem olha de fora vê só quadrados, mas nós dois sabemos o quanto a gente se joga em aventuras doidas por lá." }
+        ];
+
+        const gridRows = 13; const gridCols = 14;
+        let currentDirection = 'H'; let currentWordId = null; let winTriggered = false;
+        let wordsCompletedTracker = new Set();
+
+        const gridMap = Array.from({ length: gridRows }, () => Array(gridCols).fill(null));
+        words.forEach(w => {
+            for (let i = 0; i < w.word.length; i++) {
+                const r = w.dir === 'H' ? w.row : w.row + i;
+                const c = w.dir === 'H' ? w.col + i : w.col;
+                if (!gridMap[r][c]) {
+                    gridMap[r][c] = { letter: w.word[i], isStart: false, num: null, wordsList: [] };
+                }
+                gridMap[r][c].wordsList.push(w.id);
+                if (i === 0) { gridMap[r][c].isStart = true; gridMap[r][c].num = w.num; }
+            }
+        });
+
+        function playTone(freq, type = 'sine', duration = 0.3) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.type = type; osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        // Criar Grid
+        const gridContainer = document.getElementById('crossword-grid');
+        for (let r = 0; r < gridRows; r++) {
+            for (let c = 0; c < gridCols; c++) {
+                const cellData = gridMap[r][c]; const cellDiv = document.createElement('div');
+                if (cellData) {
+                    cellDiv.className = 'cell active-letter';
+                    if (cellData.isStart) {
+                        const numSpan = document.createElement('span');
+                        numSpan.className = 'cell-number'; numSpan.textContent = cellData.num;
+                        cellDiv.appendChild(numSpan);
+                    }
+                    const input = document.createElement('input');
+                    input.className = 'cell-input'; input.type = 'text'; input.maxLength = 1;
+                    input.setAttribute('data-row', r); input.setAttribute('data-col', c);
+                    input.setAttribute('autocomplete', 'off'); input.setAttribute('spellcheck', 'false');
+                    input.addEventListener('focus', () => handleCellFocus(input, r, c));
+                    input.addEventListener('click', (e) => handleCellClick(e));
+                    cellDiv.appendChild(input);
+                } else { cellDiv.className = 'cell empty'; }
+                gridContainer.appendChild(cellDiv);
+            }
+        }
+
+        // Listar Pistas
+        const horizList = document.getElementById('horizontals-list');
+        const vertList = document.getElementById('verticals-list');
+        words.forEach(w => {
+            const li = document.createElement('li'); li.className = 'clue-item'; li.id = `clue-${w.id}`;
+            li.innerHTML = `<strong>${w.num}.</strong> ${w.clue}`;
+            li.addEventListener('click', () => handleClueClick(w.id));
+            if (w.dir === 'H') horizList.appendChild(li); else vertList.appendChild(li);
+        });
+
+        function normalizeChar(char) {
+            if (!char) return "";
+            return char.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+        }
+
+        function handleCellFocus(input, row, col) {
+            const matchingWords = words.filter(w => {
+                if (w.dir === 'H') return row === w.row && col >= w.col && col < w.col + w.word.length;
+                return col === w.col && row >= w.row && row < w.row + w.word.length;
+            });
+            if (matchingWords.length === 0) return;
+            let selectedWord = matchingWords[0];
+            if (matchingWords.length > 1) {
+                const dirMatch = matchingWords.find(w => w.dir === currentDirection);
+                if (dirMatch) selectedWord = dirMatch;
+            }
+            currentDirection = selectedWord.dir; currentWordId = selectedWord.id;
+            highlightWordCells(selectedWord);
+            input.parentElement.classList.add('highlight-active-cell');
+            highlightClueInList(selectedWord);
+        }
+
+        function handleCellClick(e) {
+            const row = parseInt(e.target.dataset.row); const col = parseInt(e.target.dataset.col);
+            const matchingWords = words.filter(w => {
+                if (w.dir === 'H') return row === w.row && col >= w.col && col < w.col + w.word.length;
+                return col === w.col && row >= w.row && row < w.row + w.word.length;
+            });
+            if (matchingWords.length > 1) {
+                currentDirection = (currentDirection === 'H') ? 'V' : 'H';
+                const matched = matchingWords.find(w => w.dir === currentDirection);
+                if (matched) { currentWordId = matched.id; highlightWordCells(matched); highlightClueInList(matched); }
+            }
+        }
+
+        function highlightWordCells(word) {
+            document.querySelectorAll('.cell').forEach(c => { c.classList.remove('highlight-word'); c.classList.remove('highlight-active-cell'); });
+            for (let i = 0; i < word.word.length; i++) {
+                const r = word.dir === 'H' ? word.row : word.row + i;
+                const c = word.dir === 'H' ? word.col + i : word.col;
+                const cellDiv = document.querySelector(`.cell-input[data-row="${r}"][data-col="${c}"]`)?.parentElement;
+                if (cellDiv) cellDiv.classList.add('highlight-word');
+            }
+        }
+
+        function highlightClueInList(word) {
+            document.querySelectorAll('.clue-item').forEach(el => el.classList.remove('active-clue'));
+            const clueEl = document.getElementById(`clue-${word.id}`);
+            if (clueEl) {
+                clueEl.classList.add('active-clue');
+                clueEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function handleClueClick(wordId) {
+            const word = words.find(w => w.id === wordId); if (!word) return;
+            currentDirection = word.dir; currentWordId = word.id;
+            const startInput = document.querySelector(`.cell-input[data-row="${word.row}"][data-col="${word.col}"]`);
+            if (startInput) { startInput.focus(); highlightWordCells(word); }
+        }
+
+        // Navegação de inputs
+        document.addEventListener('keydown', (e) => {
+            const activeEl = document.activeElement; if (!activeEl || !activeEl.classList.contains('cell-input')) return;
+            const row = parseInt(activeEl.dataset.row); const col = parseInt(activeEl.dataset.col);
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                if (activeEl.value !== '') { activeEl.value = ''; checkPuzzle(false); } else { moveFocus(row, col, -1); }
+            } else if (e.key === 'ArrowUp') { e.preventDefault(); focusAdjacent(row - 1, col); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); focusAdjacent(row + 1, col); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); focusAdjacent(row, col - 1); }
+            else if (e.key === 'ArrowRight') { e.preventDefault(); focusAdjacent(row, col + 1); }
+        });
+
+        document.addEventListener('input', (e) => {
+            const activeEl = e.target; if (!activeEl || !activeEl.classList.contains('cell-input')) return;
+            const row = parseInt(activeEl.dataset.row); const col = parseInt(activeEl.dataset.col);
+            let val = activeEl.value;
+            if (val.length > 0) {
+                val = val[val.length - 1].toUpperCase(); activeEl.value = val;
+                playTone(480, 'sine', 0.05); moveFocus(row, col, 1);
+            }
+            checkPuzzle(false);
+        });
+
+        function moveFocus(row, col, offset) {
+            if (!currentWordId) return; const word = words.find(w => w.id === currentWordId); if (!word) return;
+            let currentIndex = (word.dir === 'H') ? col - word.col : row - word.row; const nextIndex = currentIndex + offset;
+            if (nextIndex >= 0 && nextIndex < word.word.length) {
+                const nextRow = (word.dir === 'H') ? word.row : word.row + nextIndex;
+                const nextCol = (word.dir === 'H') ? word.col + nextIndex : word.col;
+                const nextInput = document.querySelector(`.cell-input[data-row="${nextRow}"][data-col="${nextCol}"]`);
+                if (nextInput) nextInput.focus();
+            }
+        }
+
+        function focusAdjacent(row, col) {
+            const nextInput = document.querySelector(`.cell-input[data-row="${row}"][data-col="${col}"]`);
+            if (nextInput) nextInput.focus();
+        }
+
+        // Sorteador automático: embaralha as 20 fotos e escolhe 8
+        function triggerWordExplosion(wordText) {
+            const wordEl = document.createElement('div');
+            wordEl.className = 'center-word-popup';
+            wordEl.innerText = wordText;
+            document.body.appendChild(wordEl);
+            
+            setTimeout(() => wordEl.remove(), 3500);
+
+            let shuffledPhotos = [...photoPool].sort(() => 0.5 - Math.random());
+            let selectedPhotos = shuffledPhotos.slice(0, 8);
+
+            selectedPhotos.forEach(photoUrl => createParticle(photoUrl, 'photo'));
+            for (let i = 0; i < 10; i++) { createParticle('❤️', 'heart'); }
+        }
+
+        function createParticle(content, type) {
+            const el = document.createElement('div');
+            el.className = 'explosion-particle';
+            
+            if (type === 'photo') {
+                const img = document.createElement('img');
+                img.src = content;
+                img.className = 'explosion-photo';
+                el.appendChild(img);
+            } else {
+                el.innerText = content;
+                el.className += ' explosion-heart';
+            }
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 160 + Math.random() * 260; 
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            const rot = (Math.random() * 400) - 200;
+            
+            el.style.setProperty('--tx', `${tx}px`);
+            el.style.setProperty('--ty', `${ty}px`);
+            el.style.setProperty('--rot', `${rot}deg`);
+            
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3500);
+        }
+
+        function checkPuzzle(manualAlert = false) {
+            let allSolved = true; let completedCount = 0;
+            document.querySelectorAll('.cell-input').forEach(input => input.classList.remove('word-success'));
+            
+            words.forEach(w => {
+                let wordCorrect = true;
+                for (let i = 0; i < w.word.length; i++) {
+                    const r = w.dir === 'H' ? w.row : w.row + i; const c = w.dir === 'H' ? w.col + i : w.col;
+                    const input = document.querySelector(`.cell-input[data-row="${r}"][data-col="${c}"]`);
+                    const enteredVal = input ? normalizeChar(input.value) : "";
+                    if (enteredVal !== normalizeChar(w.word[i])) { wordCorrect = false; break; }
+                }
+                
+                const clueEl = document.getElementById(`clue-${w.id}`);
+                if (wordCorrect) {
+                    completedCount++;
+                    if (clueEl && !clueEl.classList.contains('completed')) {
+                        clueEl.classList.add('completed');
+                    }
+                    
+                    if (!wordsCompletedTracker.has(w.id)) {
+                        wordsCompletedTracker.add(w.id);
+                        triggerWordExplosion(w.word);
+                        playTone(587.33, 'triangle', 0.25);
+                    }
+                    
+                    for (let i = 0; i < w.word.length; i++) {
+                        const r = w.dir === 'H' ? w.row : w.row + i; const c = w.dir === 'H' ? w.col + i : w.col;
+                        const input = document.querySelector(`.cell-input[data-row="${r}"][data-col="${c}"]`);
+                        if (input) input.classList.add('word-success');
+                    }
+                } else {
+                    allSolved = false;
+                    if (clueEl) clueEl.classList.remove('completed');
+                    wordsCompletedTracker.delete(w.id);
+                }
+            });
+            
+            const progressPercent = Math.round((completedCount / words.length) * 100);
+            document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+            document.getElementById('progress-text').textContent = `${completedCount} de ${words.length} palavras resolvidas (${progressPercent}%)`;
+            
+            if (allSolved && completedCount === words.length) { triggerWin(); }
+            else if (manualAlert) {
+                if (completedCount === 0) alert("Ainda não temos palavras corretas. Continue tentando, meu bem! 💕");
+                else alert(`Você já acertou ${completedCount} de 10 palavras! Continue assim! 🥰`);
+            }
+        }
+
+        function revealLetter() {
+            const activeEl = document.activeElement;
+            if (!activeEl || !activeEl.classList.contains('cell-input')) {
+                alert("Clique em um quadradinho primeiro para poder revelar a letra correspondente!"); return;
+            }
+            const r = parseInt(activeEl.dataset.row); const c = parseInt(activeEl.dataset.col);
+            const cellData = gridMap[r][c];
+            if (cellData) { activeEl.value = cellData.letter; playTone(329.63, 'triangle', 0.2); checkPuzzle(false); }
+        }
+
+        function createFinalHearts() {
+            const container = document.getElementById('hearts-container');
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div'); heart.classList.add('floating-heart');
+                    heart.innerHTML = '❤️'; heart.style.left = Math.random() * 100 + 'vw';
+                    heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                    heart.style.animationDuration = (Math.random() * 3 + 2.5) + 's';
+                    heart.style.opacity = Math.random() * 0.5 + 0.5;
+                    container.appendChild(heart);
+                    setTimeout(() => heart.remove(), 5500);
+                }, i * 120);
+            }
+        }
+
+        function triggerWin() {
+            if (winTriggered) return; winTriggered = true;
+            const arpeggio = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+            arpeggio.forEach((freq, idx) => { setTimeout(() => playTone(freq, 'sine', 0.8), idx * 180); });
+            createFinalHearts();
+            setTimeout(() => { document.getElementById('win-modal').classList.add('active'); }, 1000);
+        }
+
+        function closeModal() { document.getElementById('win-modal').classList.remove('active'); }
+    </script>
+</body>
+</html>
